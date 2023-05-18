@@ -1,26 +1,25 @@
 using GoratLoans.Loans;
-using NodaTime;
 
 namespace GoratLoans.Tests.Loans;
 
 public class RepaymentShould
 {
     private readonly Money _loanCapital = Money.From(1000);
+    private readonly TestClock _clock = new();
 
     [Fact]
     public void Start_Granted_Loan()
     {
-        var approvalDate = UtcNowToLocalDate();
-        var repayment = StartLoanRepayment(approvalDate);
+        var repayment = StartLoanRepayment();
 
         repayment.Should().NotBeNull();
         repayment.Capital.Should().Be(_loanCapital);
-        repayment.StartedAt.Should().Be(approvalDate);
+        repayment.StartedAt.Should().Be(_clock.Now);
         repayment.Interest.Should().Be(Money.Zero);
         repayment.Id.Should().NotBeNull();
         repayment.LoanId.Should().NotBeNull();
         repayment.CustomerId.Should().NotBeNull();
-        repayment.LastLoanBalanceCalculatedAt.Should().Be(approvalDate);
+        repayment.LastLoanBalanceCalculatedAt.Should().Be(_clock.Now);
         repayment.IsFullyRepaid.Should().BeFalse();
     }
 
@@ -29,12 +28,11 @@ public class RepaymentShould
     {
         var repayment = StartLoanRepayment();
 
-        var now = UtcNowToLocalDate();
-        var dayAfterRepaymentPeriod = now + repayment.LoanPeriod + Period.FromDays(1);
+        _clock.AddDays(Repayment.LoanPeriod);
 
-        repayment.RecalculateLoanAt(dayAfterRepaymentPeriod);
+        repayment.Recalculate();
 
-        repayment.Interest.ToString().Should().Be(Money.From(8.33m).ToString());
+        repayment.Interest.Should().Be(Money.From(1m));
     }
 
     [Fact]
@@ -42,11 +40,10 @@ public class RepaymentShould
     {
         var repayment = StartLoanRepayment();
 
-        var now = UtcNowToLocalDate();
-        var dayBeforeRepaymentPeriod = now + repayment.LoanPeriod + Period.FromDays(-1);
+        _clock.AddDays(Repayment.LoanPeriod - 1);
 
-        repayment.RecalculateLoanAt(dayBeforeRepaymentPeriod);
-        repayment.Interest.ToString().Should().Be(Money.Zero.ToString());
+        repayment.Recalculate();
+        repayment.Interest.Should().Be(Money.Zero);
     }
 
     [Fact]
@@ -54,24 +51,22 @@ public class RepaymentShould
     {
         var repayment = StartLoanRepayment();
 
-        var now = UtcNowToLocalDate();
-        var dayAfterRepaymentPeriod = now + repayment.LoanPeriod + Period.FromDays(1);
+        _clock.AddDays(Repayment.LoanPeriod);
 
-        repayment.RecalculateLoanAt(dayAfterRepaymentPeriod);
-        repayment.Interest.ToString().Should().Be(Money.From(8.33m).ToString());
+        repayment.Recalculate();
+        repayment.Interest.Should().Be(Money.From(1m));
 
-        repayment.RecalculateLoanAt(dayAfterRepaymentPeriod);
-        repayment.Interest.ToString().Should().Be(Money.From(8.33m).ToString());
+        repayment.Recalculate();
+        repayment.Interest.Should().Be(Money.From(1m));
     }
 
     [Fact]
     public void Repay_Loan_Should_Repay_Interest_First()
     {
         var loan = StartLoanRepayment();
-        var now = UtcNowToLocalDate();
-        var quarterAfterLoanIsStarted = now + loan.LoanPeriod + loan.LoanPeriod + loan.LoanPeriod;
+        _clock.AddDays(Repayment.LoanPeriod * 100);
         
-        loan.RecalculateLoanAt(quarterAfterLoanIsStarted);
+        loan.Recalculate();
         var interest = loan.Interest;
         interest.Value.Should().BePositive();
 
@@ -88,10 +83,9 @@ public class RepaymentShould
     public void Repay_Loan_Should_Repay_Capital_When_Interest_Are_Repaid()
     {
         var loan = StartLoanRepayment();
-        var now = UtcNowToLocalDate();
-        var quarterAfterLoanIsStarted = now + loan.LoanPeriod + loan.LoanPeriod + loan.LoanPeriod;
+        _clock.AddDays(Repayment.LoanPeriod * 100);
         
-        loan.RecalculateLoanAt(quarterAfterLoanIsStarted);
+        loan.Recalculate();
         var interest = loan.Interest;
         interest.Value.Should().BePositive();
         var repayMoney = interest * 3;
@@ -140,27 +134,17 @@ public class RepaymentShould
     public void Provide_Total_Amount_To_Pay()
     {
         var loan = StartLoanRepayment();
-        loan.TotalAmountToPay.ToString().Should().Be(_loanCapital.ToString());
+        loan.TotalAmountToPay.Should().Be(_loanCapital);
+        _clock.AddDays(Repayment.LoanPeriod * 100);
         
+        loan.Recalculate();
         
-        var now = UtcNowToLocalDate();
-        var quarterAfterLoanIsStarted = now + loan.LoanPeriod + loan.LoanPeriod + loan.LoanPeriod;
-        loan.RecalculateLoanAt(quarterAfterLoanIsStarted);
-        
-        loan.TotalAmountToPay.ToString().Should().Be(Money.From(1016.67m).ToString());
+        loan.TotalAmountToPay.Should().Be(Money.From(1100m));
     }
 
-    private Repayment StartLoanRepayment() => StartLoanRepayment(UtcNowToLocalDate());
-    
-    private Repayment StartLoanRepayment(LocalDate approvalDate)
+    private Repayment StartLoanRepayment()
     {
-        var application = new LoanApplication(CustomerId.New(), _loanCapital);
-        return application.Approve(approvalDate);
-    }
-
-    private static LocalDate UtcNowToLocalDate()
-    {
-        var now = DateTime.UtcNow;
-        return new LocalDate(now.Year, now.Month, now.Day);
+        var application = new LoanApplication(CustomerId.New(), _loanCapital, _clock);
+        return application.Approve();
     }
 }

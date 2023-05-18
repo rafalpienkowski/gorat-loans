@@ -1,20 +1,20 @@
-using NodaTime;
-
 namespace GoratLoans.Loans;
 
 public class LoanApplication
 {
     private Money Capital { get; }
     private CustomerId CustomerId { get; }
+    private readonly IClock _clock;
 
-    public LoanApplication(CustomerId customerId, Money capital)
+    public LoanApplication(CustomerId customerId, Money capital, IClock clock)
     {
         CustomerId = customerId;
         Capital = capital;
+        _clock = clock;
     }
 
-    public Repayment Approve(LocalDate now)
+    public Repayment Approve()
     {
-        return Repayment.StartWith(CustomerId, LoanId.New(), Capital, now);
+        return Repayment.StartWith(CustomerId, LoanId.New(), Capital, _clock);
     }
 }

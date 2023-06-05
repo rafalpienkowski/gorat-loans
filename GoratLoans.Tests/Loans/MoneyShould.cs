@@ -22,7 +22,7 @@ public class MoneyShould
     }
 
     [Fact]
-    public void Money_Should_Be_Comparable()
+    public void Be_Comparable()
     {
         var money1USD = Money.From(1);
         var money2USD = Money.From(2);
@@ -37,7 +37,7 @@ public class MoneyShould
     }
 
     [Fact]
-    public void Money_Should_Support_Basic_Arithmetic_Operation()
+    public void Support_Basic_Arithmetic_Operation()
     {
         var money1USD = Money.From(1);
         var money2USD = Money.From(2);

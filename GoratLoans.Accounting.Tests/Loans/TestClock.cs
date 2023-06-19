@@ -1,6 +1,6 @@
 using GoratLoans.Loans;
 
-namespace GoratLoans.Tests.Loans;
+namespace GoratLoans.Accounting.Tests.Loans;
 
 internal class TestClock : IClock
 {

@@ -1,4 +1,6 @@
-namespace GoratLoans.Loans;
+using GoratLoans.Loans;
+
+namespace GoratLoans.Accounting.Repayments;
 
 public class Repayment
 {

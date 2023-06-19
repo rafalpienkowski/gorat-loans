@@ -1,4 +1,4 @@
-namespace GoratLoans.Loans;
+namespace GoratLoans.Accounting.Repayments;
 
 public record RepaymentId(Guid Value)
 {

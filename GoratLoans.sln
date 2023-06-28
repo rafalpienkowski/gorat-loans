@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Accounting", "Go
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Accounting.Tests", "GoratLoans.Accounting.Tests\GoratLoans.Accounting.Tests.csproj", "{26CEE71C-871C-40D8-AB2B-2D3507C5BB8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Inventory", "GoratLoans.Inventory\GoratLoans.Inventory.csproj", "{026B7263-691C-41EE-9CBE-36682F324974}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Inventory.Tests", "GoratLoans.Inventory.Tests\GoratLoans.Inventory.Tests.csproj", "{FC181ECB-1ACF-4FC4-A683-282B3AB729F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,5 +42,13 @@ Global
 		{26CEE71C-871C-40D8-AB2B-2D3507C5BB8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26CEE71C-871C-40D8-AB2B-2D3507C5BB8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26CEE71C-871C-40D8-AB2B-2D3507C5BB8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{026B7263-691C-41EE-9CBE-36682F324974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{026B7263-691C-41EE-9CBE-36682F324974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{026B7263-691C-41EE-9CBE-36682F324974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{026B7263-691C-41EE-9CBE-36682F324974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC181ECB-1ACF-4FC4-A683-282B3AB729F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC181ECB-1ACF-4FC4-A683-282B3AB729F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC181ECB-1ACF-4FC4-A683-282B3AB729F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC181ECB-1ACF-4FC4-A683-282B3AB729F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

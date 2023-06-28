@@ -1,7 +1,6 @@
 using GoratLoans.Exceptions;
-using GoratLoans.Inventory;
 
-namespace GoratLoans.Tests.Inventory;
+namespace GoratLoans.Inventory.Tests;
 
 public class ProductTypeShould
 {

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using GoratLoans.Accounting.Offering;
 using GoratLoans.Framework;
 
@@ -28,7 +29,7 @@ public class Repayment : EventSourcedAggregate
         var interest = (decimal)((double)(_capital.Value + _interest.Value) * (_yearlyInterestRate.Value / LoanDuration) *
                                  daysBetweenLastCalculation);
 
-        Causes(new InterestRecalculated(Id, interest, _capital.Currency, dateTimeOffset));
+        Causes(new InterestRecalculated(Id, interest, _capital.Currency, dateTimeOffset){ Version = Version + 1});
     }
 
     public void Repay(Money money)
@@ -41,14 +42,14 @@ public class Repayment : EventSourcedAggregate
         var overInterest = money - _interest;
         if (overInterest > _capital)
         {
-            Causes(new OverPaymentMade(Id, (money - _capital).Value, _capital.Currency));
-            Causes(new RepaymentMade(Id, _capital.Value, _interest.Value, _capital.Currency));
+            Causes(new OverPaymentMade(Id, (money - _capital).Value, _capital.Currency) {Version = Version + 1});
+            Causes(new RepaymentMade(Id, _capital.Value, _interest.Value, _capital.Currency){ Version = Version + 1});
         }
         else
         {
             Causes(overInterest > Money.Zero
-                ? new RepaymentMade(Id, overInterest.Value, _interest.Value, _capital.Currency)
-                : new RepaymentMade(Id, Money.Zero.Value, money.Value, _capital.Currency));
+                ? new RepaymentMade(Id, overInterest.Value, _interest.Value, _capital.Currency){ Version = Version + 1}
+                : new RepaymentMade(Id, Money.Zero.Value, money.Value, _capital.Currency){ Version = Version + 1});
         }
 
         if (_capital == Money.Zero)
@@ -73,6 +74,7 @@ public class Repayment : EventSourcedAggregate
         _interest = Money.Zero;
         _startedAt = repaymentStarted.RecorderAt;
         _lastLoanBalanceCalculatedAt = repaymentStarted.RecorderAt;
+        Version = repaymentStarted.Version;
     }
 
     private void On(InterestRecalculated interestRecalculated)
@@ -81,6 +83,7 @@ public class Repayment : EventSourcedAggregate
 
         _lastLoanBalanceCalculatedAt = interestRecalculated.CalculatedAt;
         _interest += interest;
+        Version = interestRecalculated.Version;
     }
 
     private void On(RepaymentMade repaymentMade)
@@ -90,16 +93,18 @@ public class Repayment : EventSourcedAggregate
 
         _interest -= interestRepaid;
         _capital -= capitalRepaid;
+        Version = repaymentMade.Version;
     }
 
     private void On(RepaymentClosed repaymentClosed)
     {
         _isClosed = true;
+        Version = repaymentClosed.Version;
     }
 
     private void On(OverPaymentMade overPaymentMade)
     {
-        //Store for information purposes
+        Version = overPaymentMade.Version;
     }
 
     public static Repayment Start(Guid loanId, Guid customerId, decimal capitalAmount, string capitalCurrency,
@@ -108,7 +113,7 @@ public class Repayment : EventSourcedAggregate
         var repayment = new Repayment();
 
         repayment.Causes(new RepaymentStarted(Guid.NewGuid(), loanId, customerId, capitalAmount, capitalCurrency,
-            clock.Now));
+            clock.Now){ Version = 0});
 
         return repayment;
     }

@@ -9,6 +9,10 @@ public abstract class EventSourcedAggregate : Entity
 
     protected void Causes(DomainEvent @event)
     {
+        if (Version > @event.Version)
+        {
+            return;
+        }
         Changes.Add(@event);
         On(@event);
         Version++;

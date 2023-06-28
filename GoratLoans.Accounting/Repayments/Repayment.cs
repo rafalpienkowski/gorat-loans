@@ -54,7 +54,7 @@ public class Repayment : EventSourcedAggregate
 
         if (_capital == Money.Zero)
         {
-            Causes(new RepaymentClosed(Id));
+            Causes(new RepaymentClosed(Id){ Version = Version + 1});
         }
     }
 

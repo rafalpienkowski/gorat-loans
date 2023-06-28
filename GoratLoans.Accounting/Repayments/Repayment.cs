@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using GoratLoans.Accounting.Offering;
 using GoratLoans.Framework;
 

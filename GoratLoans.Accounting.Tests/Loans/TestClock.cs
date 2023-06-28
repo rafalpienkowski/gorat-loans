@@ -15,6 +15,6 @@ internal class TestClock : IClock
 
     public void AddDays(int days)
     {
-        _clock = _clock.AddDays(days);
+        _clock = _clock.AddDays(days).AddMinutes(1);
     }
 }

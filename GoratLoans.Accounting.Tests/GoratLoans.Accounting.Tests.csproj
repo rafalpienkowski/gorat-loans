@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\GoratLoans.Accounting\GoratLoans.Accounting.csproj" />
+      <ProjectReference Include="..\GoratLoans.Tests\GoratLoans.Tests.csproj" />
     </ItemGroup>
     
     <ItemGroup>

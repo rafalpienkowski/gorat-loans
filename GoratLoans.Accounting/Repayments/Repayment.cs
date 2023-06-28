@@ -1,77 +1,116 @@
+using GoratLoans.Exceptions;
+using GoratLoans.Framework;
 using GoratLoans.Loans;
 
 namespace GoratLoans.Accounting.Repayments;
 
-public class Repayment
+public class Repayment : EventSourcedAggregate
 {
     private readonly InterestRate _yearlyInterestRate = new(0.365);
     private const int LoanDuration = 365;
     public const int LoanPeriod = 1;
-    private readonly IClock _clock;
 
-    public RepaymentId Id { get; }
-    public LoanId LoanId { get; }
-    public CustomerId CustomerId { get; }
-    public Money Interest { get; private set; } = new(0m);
-    public Money Capital { get; private set; }
-    public Money TotalAmountToPay => Interest + Capital;
-    public bool IsFullyRepaid => TotalAmountToPay == Money.Zero;
-    public DateTimeOffset StartedAt { get; }
-    public DateTimeOffset LastLoanBalanceCalculatedAt { get; private set; }
+    private LoanId _loanId;
+    private CustomerId _customerId;
+    private Money _interest;
+    private Money _capital;
+    private bool _isClosed;
+    private DateTimeOffset _startedAt;
+    private DateTimeOffset _lastLoanBalanceCalculatedAt;
 
-    private Repayment(RepaymentId repaymentId, LoanId loanId, CustomerId customerId, Money capital, DateTimeOffset startedAt,
-        DateTimeOffset lastLoanBalanceCalculatedAt, IClock clock)
+    public void RecalculateInterestForDate(DateTimeOffset dateTimeOffset)
     {
-        Id = repaymentId;
-        LoanId = loanId;
-        CustomerId = customerId;
-        Capital = capital;
-        StartedAt = startedAt;
-        LastLoanBalanceCalculatedAt = lastLoanBalanceCalculatedAt;
-        _clock = clock;
-    }
+        var daysBetweenLastCalculation = Math.Floor((dateTimeOffset - _lastLoanBalanceCalculatedAt).TotalDays);
+        if (daysBetweenLastCalculation <= 0)
+        {
+            return;
+        }
 
-    public static Repayment StartWith(CustomerId customerId, LoanId loanId, Money capital, IClock clock)
-    {
-        var now = clock.Now;
-        var loanRepayment = new Repayment(RepaymentId.New(), loanId, customerId, capital, now, now, clock);
+        var interest = (decimal)((double)(_capital.Value + _interest.Value) * (_yearlyInterestRate.Value / LoanDuration) *
+                                 daysBetweenLastCalculation);
 
-        return loanRepayment;
-    }
-
-    public void Recalculate()
-    {
-        var now = _clock.Now;
-        var daysBetweenLastCalculation = Math.Floor((now - LastLoanBalanceCalculatedAt).TotalDays);
-
-        var interest = (double)(Capital.Value + Interest.Value) * (_yearlyInterestRate.Value / LoanDuration) *
-                       daysBetweenLastCalculation;
-
-        Interest += new Money((decimal)interest);
-        LastLoanBalanceCalculatedAt = now;
+        Causes(new InterestRecalculated(Id, interest, _capital.Currency, dateTimeOffset));
     }
 
     public void Repay(Money money)
     {
-        if (IsFullyRepaid)
+        if (_isClosed)
         {
-            throw new InvalidOperationException("Loan is fully repaid");
+            return;
         }
 
-        var overInterest = money - Interest;
-        if (overInterest > Capital)
+        var overInterest = money - _interest;
+        if (overInterest > _capital)
         {
-            throw new InvalidOperationException("Can't accept repayment greater than remaining capital");
-        }
-
-        if (overInterest > Money.Zero)
-        {
-            Capital -= overInterest;
-            Interest = Money.Zero;
+            Causes(new OverPaymentMade(Id, (money - _capital).Value, _capital.Currency));
+            Causes(new RepaymentMade(Id, _capital.Value, _interest.Value, _capital.Currency));
         }
         else
         {
-            Interest -= money;
+            Causes(overInterest > Money.Zero
+                ? new RepaymentMade(Id, overInterest.Value, _interest.Value, _capital.Currency)
+                : new RepaymentMade(Id, Money.Zero.Value, money.Value, _capital.Currency));
         }
+
+        if (_capital == Money.Zero)
+        {
+            Causes(new RepaymentClosed(Id));
+        }
+    }
+
+    public override void On(DomainEvent @event)
+    {
+        On((dynamic)@event);
+        Version++;
+    }
+
+    private void On(RepaymentStarted repaymentStarted)
+    {
+        Id = repaymentStarted.RepaymentId;
+        _loanId = LoanId.From(repaymentStarted.LoanId);
+        _customerId = CustomerId.From(repaymentStarted.CustomerId);
+        var capital = Money.From(repaymentStarted.CapitalAmount, repaymentStarted.RepaymentCurrency);
+        _capital = capital;
+        _interest = Money.Zero;
+        _startedAt = repaymentStarted.RecorderAt;
+        _lastLoanBalanceCalculatedAt = repaymentStarted.RecorderAt;
+    }
+
+    private void On(InterestRecalculated interestRecalculated)
+    {
+        var interest = Money.From(interestRecalculated.InterestAmount, interestRecalculated.RepaymentCurrency);
+
+        _lastLoanBalanceCalculatedAt = interestRecalculated.CalculatedAt;
+        _interest += interest;
+    }
+
+    private void On(RepaymentMade repaymentMade)
+    {
+        var interestRepaid = Money.From(repaymentMade.InterestRepaidAmount, repaymentMade.RepaymentCurrency);
+        var capitalRepaid = Money.From(repaymentMade.CapitalRepaidAmount, repaymentMade.RepaymentCurrency);
+
+        _interest -= interestRepaid;
+        _capital -= capitalRepaid;
+    }
+
+    private void On(RepaymentClosed repaymentClosed)
+    {
+        _isClosed = true;
+    }
+
+    private void On(OverPaymentMade overPaymentMade)
+    {
+        //Store for information purposes
+    }
+
+    public static Repayment Start(Guid loanId, Guid customerId, decimal capitalAmount, string capitalCurrency,
+        IClock clock)
+    {
+        var repayment = new Repayment();
+
+        repayment.Causes(new RepaymentStarted(Guid.NewGuid(), loanId, customerId, capitalAmount, capitalCurrency,
+            clock.Now));
+
+        return repayment;
     }
 }

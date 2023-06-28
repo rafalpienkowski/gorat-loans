@@ -1,6 +1,4 @@
-using GoratLoans.Loans;
-
-namespace GoratLoans.Accounting.Tests.Loans;
+namespace GoratLoans.Tests;
 
 public class MoneyShould
 {

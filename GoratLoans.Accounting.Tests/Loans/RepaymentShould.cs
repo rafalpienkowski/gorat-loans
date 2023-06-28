@@ -1,6 +1,7 @@
-using GoratLoans.Accounting.Oferting;
 using GoratLoans.Accounting.Repayments;
+using GoratLoans.Framework;
 using GoratLoans.Loans;
+using GoratLoans.Tests.Framework;
 
 namespace GoratLoans.Accounting.Tests.Loans;
 
@@ -10,93 +11,79 @@ public class RepaymentShould
     private readonly TestClock _clock = new();
 
     [Fact]
-    public void Start_Granted_Loan()
+    public void Be_Started()
     {
         var repayment = StartLoanRepayment();
 
-        repayment.Should().NotBeNull();
-        repayment.Capital.Should().Be(_loanCapital);
-        repayment.StartedAt.Should().Be(_clock.Now);
-        repayment.Interest.Should().Be(Money.Zero);
-        repayment.Id.Should().NotBeNull();
-        repayment.LoanId.Should().NotBeNull();
-        repayment.CustomerId.Should().NotBeNull();
-        repayment.LastLoanBalanceCalculatedAt.Should().Be(_clock.Now);
-        repayment.IsFullyRepaid.Should().BeFalse();
+        AssertRepaymentStartedEvent(repayment);
     }
 
     [Fact]
-    public void Calculate_Interest_After_Repayment_Period()
+    public void Calculate_Interest_After_Repayment_Period_Is_Closed()
     {
         var repayment = StartLoanRepayment();
 
         _clock.AddDays(Repayment.LoanPeriod);
 
-        repayment.Recalculate();
-
-        repayment.Interest.Should().Be(Money.From(1m));
+        repayment.RecalculateInterestForDate(_clock.Now);
+        
+        AssertInterestRecalculatedEvent(repayment, 1);
     }
 
     [Fact]
     public void Do_Not_Add_Interest_When_Loan_Period_Is_Not_Finished()
     {
         var repayment = StartLoanRepayment();
-
         _clock.AddDays(Repayment.LoanPeriod - 1);
 
-        repayment.Recalculate();
-        repayment.Interest.Should().Be(Money.Zero);
+        repayment.RecalculateInterestForDate(_clock.Now);
+        
+        var interestRecalculated = repayment.GetProducedEventByType<InterestRecalculated>();
+        interestRecalculated.Should().BeNull();
     }
 
     [Fact]
     public void Do_Not_Add_Interest_Twice_For_A_Period()
     {
         var repayment = StartLoanRepayment();
-
         _clock.AddDays(Repayment.LoanPeriod);
+        repayment.RecalculateInterestForDate(_clock.Now);
+        AssertInterestRecalculatedEvent(repayment, 1);
+        repayment.FlushChanges();
 
-        repayment.Recalculate();
-        repayment.Interest.Should().Be(Money.From(1m));
-
-        repayment.Recalculate();
-        repayment.Interest.Should().Be(Money.From(1m));
+        repayment.RecalculateInterestForDate(_clock.Now);
+        
+        var interestRecalculated = repayment.GetProducedEventByType<InterestRecalculated>();
+        interestRecalculated.Should().BeNull();
     }
 
     [Fact]
     public void Repay_Loan_Should_Repay_Interest_First()
     {
-        var loan = StartLoanRepayment();
+        var repayment = StartLoanRepayment();
         _clock.AddDays(Repayment.LoanPeriod * 100);
+        repayment.RecalculateInterestForDate(_clock.Now);
+        AssertInterestRecalculatedEvent(repayment, 100);
+        repayment.FlushChanges();
         
-        loan.Recalculate();
-        var interest = loan.Interest;
-        interest.Value.Should().BePositive();
-
-        var remainingValue = Money.From(1);
-        var repayMoney = interest - remainingValue;
-        repayMoney.Value.Should().BePositive();
-
-        loan.Repay(repayMoney);
-        loan.Interest.Value.Should().BePositive();
-        loan.Interest.Should().Be(remainingValue);
+        var repayMoney = Money.From(90);
+        repayment.Repay(repayMoney);
+        
+        AssertRepaymentMadeEvent(repayment, 0, 90);
     }
 
     [Fact]
     public void Repay_Loan_Should_Repay_Capital_When_Interest_Are_Repaid()
     {
-        var loan = StartLoanRepayment();
+        var repayment = StartLoanRepayment();
         _clock.AddDays(Repayment.LoanPeriod * 100);
         
-        loan.Recalculate();
-        var interest = loan.Interest;
-        interest.Value.Should().BePositive();
-        var repayMoney = interest * 3;
-        var expectedCapital = loan.Capital - (interest * 2);
-        repayMoney.Value.Should().BePositive();
+        repayment.RecalculateInterestForDate(_clock.Now);
+        AssertInterestRecalculatedEvent(repayment, 100);
+        var repayMoney = Money.From(300);
 
-        loan.Repay(repayMoney);
-        loan.Interest.Should().Be(Money.Zero);
-        loan.Capital.Should().Be(expectedCapital);
+        repayment.Repay(repayMoney);
+        AssertRepaymentMadeEvent(repayment, 200, 100);
     }
 
     [Fact]
@@ -104,49 +91,80 @@ public class RepaymentShould
     {
         var loan = StartLoanRepayment();
         
-        loan.Repay(loan.Capital);
+        loan.Repay(_loanCapital);
 
-        loan.IsFullyRepaid.Should().BeTrue();
+        AssertRepaymentIsClosedEvent(loan);
     }
 
     [Fact]
     public void Reject_Repayment_For_Closed_Loan()
     {
         var loan = StartLoanRepayment();
-        loan.Repay(loan.Capital);
-        loan.IsFullyRepaid.Should().BeTrue();
-
-        var repay = () => loan.Repay(Money.From(1));
-
-        repay.Should().Throw<InvalidOperationException>();
+        loan.Repay(_loanCapital);
+        AssertRepaymentIsClosedEvent(loan);
+        loan.FlushChanges();
+        
+        loan.Repay(Money.From(1));
+        var repaymentMade = loan.GetProducedEventByType<RepaymentMade>();
+        repaymentMade.Should().BeNull();
     }
 
     [Fact]
     public void Reject_Repay_Over_Capital()
     {
-        var loan = StartLoanRepayment();
-        var overCapitalRepayment = loan.Capital + Money.From(1);
+        var repayment = StartLoanRepayment();
+        var overCapitalRepayment = _loanCapital + Money.From(1);
 
-        var repay = () => loan.Repay(overCapitalRepayment);
+        repayment.Repay(overCapitalRepayment);
 
-        repay.Should().Throw<InvalidOperationException>();
+        AssertRepaymentMadeEvent(repayment, _loanCapital.Value, 0);
+
+        var overPaymentMade = repayment.GetProducedEventByType<OverPaymentMade>();
+        overPaymentMade.Should().NotBeNull();
+        overPaymentMade!.RepaymentId.Should().Be(repayment.Id);
+        overPaymentMade.OverPaymentAmount.Should().Be(1);
+        overPaymentMade.RepaymentCurrency.Should().Be(_loanCapital.Currency);
     }
 
-    [Fact]
-    public void Provide_Total_Amount_To_Pay()
+    private void AssertRepaymentMadeEvent(Repayment repayment, decimal expectedCapitalRepaid, decimal expectedInterestRepaid)
     {
-        var loan = StartLoanRepayment();
-        loan.TotalAmountToPay.Should().Be(_loanCapital);
-        _clock.AddDays(Repayment.LoanPeriod * 100);
-        
-        loan.Recalculate();
-        
-        loan.TotalAmountToPay.Should().Be(Money.From(1100m));
+        var repaymentMade = repayment.GetProducedEventByType<RepaymentMade>();
+        repaymentMade.Should().NotBeNull();
+        repaymentMade!.RepaymentId.Should().Be(repayment.Id);
+        repaymentMade.CapitalRepaidAmount.Should().Be(expectedCapitalRepaid);
+        repaymentMade.InterestRepaidAmount.Should().Be(expectedInterestRepaid);
+        repaymentMade.RepaymentCurrency.Should().Be(_loanCapital.Currency);
     }
 
-    private Repayment StartLoanRepayment()
+    private void AssertInterestRecalculatedEvent(Repayment repayment, decimal expectedAmount)
     {
-        var application = new LoanApplication(CustomerId.New(), _loanCapital, _clock);
-        return application.Approve();
+        var interestRecalculated = repayment.GetProducedEventByType<InterestRecalculated>();
+        
+        interestRecalculated.Should().NotBeNull();
+        interestRecalculated!.CalculatedAt.Should().Be(_clock.Now);
+        interestRecalculated.RepaymentCurrency.Should().Be(_loanCapital.Currency);
+        interestRecalculated.InterestAmount.Should().Be(expectedAmount);
     }
+    
+    private void AssertRepaymentStartedEvent(Repayment repayment)
+    {
+        var repaymentStarted = repayment.GetProducedEventByType<RepaymentStarted>();
+        repaymentStarted.Should().NotBeNull();
+        repaymentStarted!.CapitalAmount.Should().Be(_loanCapital.Value);
+        repaymentStarted.RepaymentCurrency.Should().Be(_loanCapital.Currency);
+        repaymentStarted.StartedAt.Should().Be(_clock.Now);
+        repaymentStarted.RepaymentId.Should().NotBeEmpty();
+        repaymentStarted.LoanId.Should().NotBeEmpty();
+        repaymentStarted.CustomerId.Should().NotBeEmpty();
+    }
+    
+    private static void AssertRepaymentIsClosedEvent(Repayment loan)
+    {
+        var repaymentClosed = loan.GetProducedEventByType<RepaymentClosed>();
+        repaymentClosed.Should().NotBeNull();
+        repaymentClosed!.RepaymentId.Should().Be(loan.Id);
+    }
+
+    private Repayment StartLoanRepayment() =>
+        Repayment.Start(Guid.NewGuid(), Guid.NewGuid(), _loanCapital.Value, _loanCapital.Currency, _clock);
 }

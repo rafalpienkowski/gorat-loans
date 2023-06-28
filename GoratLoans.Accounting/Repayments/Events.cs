@@ -9,9 +9,9 @@ public record InterestRecalculated(Guid RepaymentId, decimal InterestAmount, str
     DateTimeOffset CalculatedAt) : DomainEvent;
 
 public record RepaymentMade
-    (Guid RepaymentId, decimal CapitalRepaidAmount, decimal InterestRepaidAmount, string RepaymentCurrency) : PublicDomainEvent;
+    (Guid RepaymentId, decimal CapitalRepaidAmount, decimal InterestRepaidAmount, string RepaymentCurrency) : DomainEvent;
     
     
-public record OverPaymentMade(Guid RepaymentId, decimal OverPaymentAmount, string RepaymentCurrency) : PublicDomainEvent;
+public record OverPaymentMade(Guid RepaymentId, decimal OverPaymentAmount, string RepaymentCurrency) : DomainEvent;
 
 public record RepaymentClosed(Guid RepaymentId) : DomainEvent;

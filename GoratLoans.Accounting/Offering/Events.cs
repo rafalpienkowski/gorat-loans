@@ -2,7 +2,7 @@ using GoratLoans.Framework;
 
 namespace GoratLoans.Accounting.Offering;
 
-public record LoanGranted : PublicDomainEvent
+public record LoanGranted : DomainEvent
 {
     public Guid CustomerId { get; init; }
     public Guid LoanId { get; init; }

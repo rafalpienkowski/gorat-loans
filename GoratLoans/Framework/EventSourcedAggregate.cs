@@ -11,6 +11,7 @@ public abstract class EventSourcedAggregate : Entity
     {
         Changes.Add(@event);
         On(@event);
+        Version++;
     }
 
     public void FlushChanges() => Changes = new List<DomainEvent>();

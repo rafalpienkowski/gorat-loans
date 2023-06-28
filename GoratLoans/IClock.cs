@@ -1,4 +1,4 @@
-namespace GoratLoans.Loans;
+namespace GoratLoans;
 
 public interface IClock
 {

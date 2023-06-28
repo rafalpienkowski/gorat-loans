@@ -1,6 +1,6 @@
 using GoratLoans.Exceptions;
 
-namespace GoratLoans.Loans;
+namespace GoratLoans;
 
 public record CustomerId(Guid Value)
 {

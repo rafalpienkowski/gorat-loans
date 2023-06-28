@@ -1,5 +1,3 @@
-using GoratLoans.Loans;
-
 namespace GoratLoans.Accounting.Tests.Loans;
 
 internal class TestClock : IClock

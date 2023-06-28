@@ -1,6 +1,4 @@
 using GoratLoans.Accounting.Repayments;
-using GoratLoans.Framework;
-using GoratLoans.Loans;
 using GoratLoans.Tests.Framework;
 
 namespace GoratLoans.Accounting.Tests.Loans;

@@ -1,5 +1,3 @@
-using GoratLoans.Accounting.Repayments;
-using GoratLoans.Framework;
 using GoratLoans.Loans;
 
 namespace GoratLoans.Accounting.Offering;

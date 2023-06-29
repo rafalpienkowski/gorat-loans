@@ -60,7 +60,6 @@ public class Repayment : EventSourcedAggregate
     public override void On(DomainEvent @event)
     {
         On((dynamic)@event);
-        Version++;
     }
 
     private void On(RepaymentStarted repaymentStarted)

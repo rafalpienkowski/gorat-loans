@@ -1,7 +1,7 @@
 using GoratLoans.Accounting.Repayments;
 using GoratLoans.Tests.Framework;
 
-namespace GoratLoans.Accounting.Tests.Loans;
+namespace GoratLoans.Accounting.Tests.Repayments;
 
 public class RepaymentShould
 {

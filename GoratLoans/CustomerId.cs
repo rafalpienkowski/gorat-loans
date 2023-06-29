@@ -15,4 +15,6 @@ public record CustomerId(Guid Value)
         
         return new CustomerId(value);
     }
+
+    public static CustomerId From(string value) => From(new Guid(value));
 }

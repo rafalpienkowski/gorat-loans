@@ -2,10 +2,9 @@ using GoratLoans.Framework;
 
 namespace GoratLoans.Accounting.Offering;
 
-public record LoanGranted : DomainEvent
-{
-    public Guid CustomerId { get; init; }
-    public Guid LoanId { get; init; }
-    public decimal CapitalAmount { get; init; }
-    public string CapitalCurrency { get; init; } = null!;
-}
+public record LoanApplicationStarted(Guid LoanApplicationId, Guid CustomerId, decimal CapitalAmount,
+    string CapitalCurrency) : DomainEvent;
+
+public record LoanGranted(Guid LoanApplicationId, Guid LoanId) : DomainEvent;
+
+public record LoanApplicationRejected(Guid LoanApplicationId, string Reason) : DomainEvent;

@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Inventory.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.UI", "GoratLoans.UI\GoratLoans.UI.csproj", "{8E1269B0-DAA2-43FF-B6E4-45E95550FCA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Customers", "GoratLoans.Customers\GoratLoans.Customers.csproj", "{57598FEC-D31D-40A5-A6CB-E1D335C65E85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,5 +58,9 @@ Global
 		{8E1269B0-DAA2-43FF-B6E4-45E95550FCA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E1269B0-DAA2-43FF-B6E4-45E95550FCA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E1269B0-DAA2-43FF-B6E4-45E95550FCA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57598FEC-D31D-40A5-A6CB-E1D335C65E85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57598FEC-D31D-40A5-A6CB-E1D335C65E85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57598FEC-D31D-40A5-A6CB-E1D335C65E85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57598FEC-D31D-40A5-A6CB-E1D335C65E85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

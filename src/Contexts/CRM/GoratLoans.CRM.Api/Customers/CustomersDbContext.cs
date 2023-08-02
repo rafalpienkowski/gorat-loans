@@ -1,3 +1,4 @@
+using GoratLoans.CRM.Api.Customers;
 using GoratLoans.CRM.Customers;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,7 +1,7 @@
 using GoratLoans.CRM.Customers;
 using Microsoft.EntityFrameworkCore;
 
-namespace GoratLoans.CRM.Adapters.Customers;
+namespace GoratLoans.CRM.Api.Customers;
 
 internal static class Configuration
 {

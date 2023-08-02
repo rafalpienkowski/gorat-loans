@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\BuildingBlocks\GoratLoans.Infrastructure\GoratLoans.Infrastructure.csproj" />
-        <ProjectReference Include="..\GoratLoans.CRM.Adapters\GoratLoans.CRM.Adapters.csproj" />
         <ProjectReference Include="..\GoratLoans.CRM\GoratLoans.CRM.csproj" />
     </ItemGroup>
 

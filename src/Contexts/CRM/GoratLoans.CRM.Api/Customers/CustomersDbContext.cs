@@ -1,8 +1,7 @@
-using GoratLoans.CRM.Api.Customers;
 using GoratLoans.CRM.Customers;
 using Microsoft.EntityFrameworkCore;
 
-namespace GoratLoans.CRM.Adapters.Customers;
+namespace GoratLoans.CRM.Api.Customers;
 
 public class CustomersDbContext : DbContext
 {

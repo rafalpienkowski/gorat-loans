@@ -1,5 +1,5 @@
 using GoratLoans.Domain.Framework;
 
-namespace GoratLoans.CRM.PublicEvents;
+namespace GoratLoans.Accounting.Accounts.PublicEvents;
 
 public record AccountCreated(Guid AccountId, Guid CustomerId) : PublicDomainEvent;

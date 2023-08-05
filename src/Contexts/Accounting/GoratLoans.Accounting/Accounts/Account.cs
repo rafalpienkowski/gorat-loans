@@ -1,6 +1,6 @@
 using GoratLoans.Domain;
 
-namespace GoratLoans.CRM.Accounts;
+namespace GoratLoans.Accounting.Accounts;
 
 public class Account
 {

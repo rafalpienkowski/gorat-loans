@@ -1,4 +1,3 @@
-using GoratLoans.CRM.Adapters.Customers;
 using GoratLoans.CRM.Api.Customers;
 using GoratLoans.Infrastructure.Storage;
 using Microsoft.AspNetCore.Mvc;

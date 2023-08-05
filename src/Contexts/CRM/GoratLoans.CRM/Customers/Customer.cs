@@ -7,6 +7,7 @@ public class Customer
     public string LastName { get; private set; }
     public DateOnly BirthDate { get; private set; }
     public string Address { get; private set; }
+    public bool IsVerified { get; private set; }
 
     private Customer()
     {
@@ -20,9 +21,9 @@ public class Customer
         BirthDate = birthDate;
         Address = address;
     }
-}
 
-public interface ICustomerRepository
-{
-    Task SaveAsync(Customer customer);
+    public void Verify()
+    {
+        IsVerified = true;
+    }
 }

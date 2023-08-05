@@ -7,6 +7,7 @@
             <th scope="col">Last name</th>
             <th scope="col">Address</th>
             <th scope="col">Birth date</th>
+            <th scope="col">Is verified</th>
             <th scope="col">Update</th>
             <th scope="col">Delete</th>
         </tr>
@@ -28,7 +29,10 @@
                 @customer.BirthDate
             </td>
             <td class="align-middle">
-                <button type="button" class="btn btn-info">Update</button>
+                @customer.IsVerified
+            </td>
+            <td class="align-middle">
+                <button type="button" class="btn btn-info">Verify</button>
             </td>
             <td class="align-middle">
                 <button type="button" class="btn btn-danger">Delete</button>

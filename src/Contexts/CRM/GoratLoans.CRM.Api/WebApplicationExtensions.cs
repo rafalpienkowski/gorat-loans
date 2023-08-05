@@ -1,4 +1,5 @@
 using GoratLoans.CRM.Api.Customers;
+using GoratLoans.CRM.Customers;
 using GoratLoans.Infrastructure.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,8 +46,31 @@ public static class WebApplicationExtensions
                 }
             )
             .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status201Created);
 
+        app.MapPost(
+            "/api/customers/{customerId:guid}/verify",
+            async (
+                [FromServices] CustomersDbContext dbContext,
+                [FromRoute] Guid customerId,
+                CancellationToken ct
+            ) =>
+            {
+                var customer = await dbContext.FindAsync<Customer>(customerId);
+                if (customer == null)
+                {
+                    return Results.NotFound();
+                }
+             
+                customer.Verify();
+                await dbContext.SaveChangesAsync(ct);
+
+                return Results.Accepted();
+            })
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status202Accepted);
+        
         app.MapGet("/api/customers",
             ([FromServices] CustomersDbContext dbContext, CancellationToken ct) =>
                 dbContext.Customers.AsNoTracking().ToListAsync(ct)).Produces(StatusCodes.Status200OK);

@@ -1,0 +1,44 @@
+<h3>Customers</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">First name</th>
+            <th scope="col">Last name</th>
+            <th scope="col">Address</th>
+            <th scope="col">Birth date</th>
+            <th scope="col">Update</th>
+            <th scope="col">Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var customer in Customers)
+    {
+        <tr>
+            <td class="align-middle">
+                @customer.FirstName
+            </td>
+            <td class="align-middle">
+                @customer.LastName
+            </td>
+            <td class="align-middle">
+                @customer.Address
+            </td>
+            <td class="align-middle">
+                @customer.BirthDate
+            </td>
+            <td class="align-middle">
+                <button type="button" class="btn btn-info">Update</button>
+            </td>
+            <td class="align-middle">
+                <button type="button" class="btn btn-danger">Delete</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<CustomerViewModel> Customers { get; set; }
+}

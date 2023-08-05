@@ -8,4 +8,5 @@ public class CustomerViewModel
     public DateOnly BirthDate { get; set; }
     public string Address { get; set; }
     public bool IsVerified { get; set; }
+    public bool IsActive { get; set; }
 }

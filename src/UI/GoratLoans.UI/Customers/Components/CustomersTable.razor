@@ -8,8 +8,9 @@
             <th scope="col">Address</th>
             <th scope="col">Birth date</th>
             <th scope="col">Is verified</th>
-            <th scope="col">Update</th>
-            <th scope="col">Delete</th>
+            <th scope="col">Is active</th>
+            <th scope="col">Verify</th>
+            <th scope="col">Suspend</th>
         </tr>
     </thead>
     <tbody>
@@ -32,10 +33,13 @@
                 @customer.IsVerified
             </td>
             <td class="align-middle">
-                <button type="button" class="btn btn-info">Verify</button>
+                @customer.IsActive
             </td>
             <td class="align-middle">
-                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-info" disabled="@(customer.IsVerified || !customer.IsActive)">Verify</button>
+            </td>
+            <td class="align-middle">
+                <button type="button" class="btn btn-danger" disabled="@(!customer.IsActive)">Suspend</button>
             </td>
         </tr>
     }

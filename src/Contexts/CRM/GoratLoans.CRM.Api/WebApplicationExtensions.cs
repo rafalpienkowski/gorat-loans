@@ -71,6 +71,29 @@ public static class WebApplicationExtensions
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status202Accepted);
         
+        
+        app.MapPost(
+            "/api/customers/{customerId:guid}/suspend",
+            async (
+                [FromServices] CustomersDbContext dbContext,
+                [FromRoute] Guid customerId,
+                CancellationToken ct
+            ) =>
+            {
+                var customer = await dbContext.FindAsync<Customer>(customerId);
+                if (customer == null)
+                {
+                    return Results.NotFound();
+                }
+             
+                customer.Suspend();
+                await dbContext.SaveChangesAsync(ct);
+
+                return Results.Accepted();
+            })
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status202Accepted);
+        
         app.MapGet("/api/customers",
             ([FromServices] CustomersDbContext dbContext, CancellationToken ct) =>
                 dbContext.Customers.AsNoTracking().ToListAsync(ct)).Produces(StatusCodes.Status200OK);

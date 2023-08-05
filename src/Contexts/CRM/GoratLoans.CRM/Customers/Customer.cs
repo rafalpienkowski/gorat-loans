@@ -8,6 +8,7 @@ public class Customer
     public DateOnly BirthDate { get; private set; }
     public string Address { get; private set; }
     public bool IsVerified { get; private set; }
+    public bool IsActive { get; private set; }
 
     private Customer()
     {
@@ -20,10 +21,17 @@ public class Customer
         LastName = lastName;
         BirthDate = birthDate;
         Address = address;
+        IsActive = true;
+        IsVerified = false;
     }
 
     public void Verify()
     {
         IsVerified = true;
+    }
+
+    public void Suspend()
+    {
+        IsActive = false;
     }
 }

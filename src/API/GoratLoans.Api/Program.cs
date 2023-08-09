@@ -1,10 +1,12 @@
 using GoratLoans.CRM.Api;
+using GoratLoans.Users.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
+    .AddUsersApi(builder.Environment)
     .AddCustomersApi(false);
 
 var app = builder.Build();
@@ -20,5 +22,6 @@ else
     app.UseHsts();
 }
 
-app.UseCustomersApiAsync();
-app.Run();
+app.UseUsersApiAsync()
+    .UseCustomersApiAsync()
+    .Run();

@@ -8,7 +8,7 @@ namespace GoratLoans.CRM.Api;
 
 public static class WebApplicationExtensions
 {
-    public static void AddCustomersApi(this IServiceCollection services, bool isProduction)
+    public static IServiceCollection AddCustomersApi(this IServiceCollection services, bool isProduction)
     {
         if (isProduction)
         {
@@ -20,9 +20,11 @@ public static class WebApplicationExtensions
             services.AddDbContext<CustomersDbContext>(
                 options => options.UseInMemoryDatabase("CustomersDB"));
         }
+
+        return services;
     }
 
-    public static void UseCustomersApiAsync(this WebApplication app)
+    public static WebApplication UseCustomersApiAsync(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
@@ -97,5 +99,7 @@ public static class WebApplicationExtensions
         app.MapGet("/api/customers",
             ([FromServices] CustomersDbContext dbContext, CancellationToken ct) =>
                 dbContext.Customers.AsNoTracking().ToListAsync(ct)).Produces(StatusCodes.Status200OK);
+
+        return app;
     }
 }

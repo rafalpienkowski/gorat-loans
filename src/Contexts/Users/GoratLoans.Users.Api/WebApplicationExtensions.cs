@@ -5,6 +5,7 @@ using System.Text;
 using GoratLoans.Infrastructure.Storage;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GoratLoans.Users.Api;
@@ -17,7 +18,7 @@ public class UserDto
 
 internal class User
 {
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
     public string Username { get; set; }
     public bool IsAdmin { get; set; }
     public byte[] PasswordHash { get; set; }
@@ -27,14 +28,32 @@ internal class User
 internal class UsersDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
-    
+
     public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options)
     {
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+        modelBuilder.ApplyConfiguration(new UsersConfiguration());
+    }
+}
+
+internal class UsersConfiguration : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        PasswordService.CreatePasswordHash("admin", out var passwordHash, out var passwordSalt);
+        builder
+            .HasData(new User
+            {
+                Id = Guid.NewGuid(), IsAdmin = true, Username = "Admin", PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
+            });
     }
 }
 
@@ -63,7 +82,7 @@ internal static class TokenService
         {
             new(ClaimTypes.Name, user.Username)
         };
-        if (user.IsAdmin || user.Username == "Raf")
+        if (user.IsAdmin)
         {
             claims.Add(new Claim(ClaimTypes.Role, "Admin"));
         }
@@ -75,8 +94,27 @@ internal static class TokenService
             signingCredentials: cred);
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-        
+
         return jwt;
+    }
+}
+
+public static class MigrationManager
+{
+    public static WebApplication MigrateDatabase(this WebApplication host)
+    {
+        using var scope = host.Services.CreateScope();
+        using var appContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
+        PasswordService.CreatePasswordHash("admin", out var passwordHash, out var passwordSalt);
+        appContext.Users.Add(
+            new User
+            {
+                Id = Guid.NewGuid(), IsAdmin = true, Username = "Admin", PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
+            });
+        appContext.SaveChanges();
+        return host;
     }
 }
 
@@ -92,13 +130,15 @@ public static class WebApplicationExtensions
         {
             services.AddDbContext<UsersDbContext>(options => options.UseInMemoryDatabase("UsersDB"));
         }
-        
+
         return services;
     }
 
 
     public static WebApplication UseUsersApiAsync(this WebApplication app)
     {
+        app.MigrateDatabase();
+
         app.MapPost(
                 "/api/users/register",
                 async (
@@ -107,7 +147,8 @@ public static class WebApplicationExtensions
                     CancellationToken ct
                 ) =>
                 {
-                    PasswordService.CreatePasswordHash(request.Password, out var passwordHash, out var passwordSalt);
+                    PasswordService.CreatePasswordHash(request.Password, out var passwordHash,
+                        out var passwordSalt);
                     var user = new User
                     {
                         Username = request.Name,
@@ -132,8 +173,7 @@ public static class WebApplicationExtensions
                 "/api/users/login",
                 async (
                     [FromServices] UsersDbContext dDbContext,
-                    UserDto request,
-                    CancellationToken ct
+                    UserDto request
                 ) =>
                 {
                     var user = await dDbContext.Users.SingleOrDefaultAsync(u => u.Username == request.Name);
@@ -150,14 +190,15 @@ public static class WebApplicationExtensions
                         return Results.BadRequest("Can't log in");
                     }
 
-                    var token = TokenService.CreateToken(user, "c04cdab52c5248a79126344da513f64536505e149bc7452fbf3baf59f11caf0b");
-                    
+                    var token = TokenService.CreateToken(user,
+                        "c04cdab52c5248a79126344da513f64536505e149bc7452fbf3baf59f11caf0b");
+
                     return Results.Ok(token);
                 }
             )
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status200OK);
-        
+
         return app;
     }
 }

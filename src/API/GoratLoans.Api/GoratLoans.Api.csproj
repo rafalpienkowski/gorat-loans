@@ -16,7 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Contexts\CRM\GoratLoans.CRM.Api\GoratLoans.CRM.Api.csproj" />
-      <ProjectReference Include="..\..\Contexts\Users\GoratLoans.Users.Api\GoratLoans.Users.Api.csproj" />
+      <ProjectReference Include="..\..\Contexts\Users\GoratLoans.Identity.Api\GoratLoans.Identity.Api.csproj" />
     </ItemGroup>
 
     <ItemGroup>

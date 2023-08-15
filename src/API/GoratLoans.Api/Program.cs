@@ -1,5 +1,5 @@
 using GoratLoans.CRM.Api;
-using GoratLoans.Users.Api;
+using GoratLoans.Identity.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 

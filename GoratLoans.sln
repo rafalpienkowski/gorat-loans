@@ -39,9 +39,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Api", "src\API\G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.CRM.Api", "src\Contexts\CRM\GoratLoans.CRM.Api\GoratLoans.CRM.Api.csproj", "{2C8A09F7-D9D4-464A-8329-820BA9E5AD4D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Users", "Users", "{CCEB2AB6-23B0-4EFC-8D5A-FBFEE249879D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{CCEB2AB6-23B0-4EFC-8D5A-FBFEE249879D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Users.Api", "src\Contexts\Users\GoratLoans.Users.Api\GoratLoans.Users.Api.csproj", "{DC3ABB9E-C76E-4E0F-B266-6D6A79C06703}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoratLoans.Identity.Api", "src\Contexts\Identity\GoratLoans.Identity.Api\GoratLoans.Identity.Api.csproj", "{DC3ABB9E-C76E-4E0F-B266-6D6A79C06703}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

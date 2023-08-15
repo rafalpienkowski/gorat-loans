@@ -30,7 +30,7 @@ public class AuthService : IAuthService
 
     public async Task<RegisterResult> Register(RegisterModel registerModel)
     {
-        var result = await _httpClient.PostAsJsonAsync("/accounts/register", registerModel);
+        var result = await _httpClient.PostAsJsonAsync("identity/register", registerModel);
 
         result.EnsureSuccessStatusCode();
 
@@ -40,7 +40,7 @@ public class AuthService : IAuthService
     public async Task<LoginResult> Login(LoginModel loginModel)
     {
         var loginAsJson = JsonSerializer.Serialize(loginModel);
-        var response = await _httpClient.PostAsync("users/login", new StringContent(loginAsJson, Encoding.UTF8, "application/json"));
+        var response = await _httpClient.PostAsync("identity/login", new StringContent(loginAsJson, Encoding.UTF8, "application/json"));
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();

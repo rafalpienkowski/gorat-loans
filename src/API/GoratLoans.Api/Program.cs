@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
-    .AddUsersApi(builder.Environment)
+    .AddIdentityApi(builder.Environment)
     .AddCustomersApi(false);
 
 var app = builder.Build();
@@ -22,6 +22,6 @@ else
     app.UseHsts();
 }
 
-app.UseUsersApiAsync()
+app.UseIdentityApiAsync()
     .UseCustomersApiAsync()
     .Run();

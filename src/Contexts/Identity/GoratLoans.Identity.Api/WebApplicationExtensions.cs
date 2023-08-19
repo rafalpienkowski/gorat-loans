@@ -12,7 +12,7 @@ public class UserDto
 
 public static class WebApplicationExtensions
 {
-    public static IServiceCollection AddUsersApi(this IServiceCollection services, IWebHostEnvironment environment)
+    public static IServiceCollection AddIdentityApi(this IServiceCollection services, IWebHostEnvironment environment)
     {
         if (environment.IsProduction())
         {
@@ -26,7 +26,7 @@ public static class WebApplicationExtensions
         return services;
     }
 
-    public static WebApplication UseUsersApiAsync(this WebApplication app)
+    public static WebApplication UseIdentityApiAsync(this WebApplication app)
     {
         app.MigrateDatabase();
 

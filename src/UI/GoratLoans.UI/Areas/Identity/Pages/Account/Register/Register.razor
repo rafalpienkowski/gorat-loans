@@ -1,0 +1,77 @@
+@page "/Identity/Account/Register"
+@using GoratLoans.UI.Areas.Identity.Pages.Account.Login
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<h1>Register</h1>
+
+@if (ShowErrors)
+{
+    <div class="alert alert-danger" role="alert">
+        <p>@Errors</p>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Please enter your details</h5>
+        <EditForm Model="registerModel" OnValidSubmit="Handle">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+
+            <div class="form-group">
+                <label for="email">Name</label>
+                <InputText Id="email" Class="form-control" @bind-Value="registerModel.Name"/>
+                <ValidationMessage For="@(() => registerModel.Name)"/>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText Id="password" type="password" Class="form-control" @bind-Value="registerModel.Password"/>
+                <ValidationMessage For="@(() => registerModel.Password)"/>
+            </div>
+            <div class="form-group">
+                <label for="password">Confirm password</label>
+                <InputText Id="confirmPassword" type="password" Class="form-control" @bind-Value="registerModel.ConfirmPassword"/>
+                <ValidationMessage For="@(() => registerModel.Password)"/>
+            </div>
+            <p/>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    private RegisterModel registerModel = new();
+    private bool ShowErrors;
+    private string Errors = "";
+
+    private async Task Handle()
+    {
+        ShowErrors = false;
+
+        var result = await AuthService.Register(registerModel);
+
+        if (result.Successful)
+        {
+            var loginResult = await AuthService.Login(new LoginModel
+            {
+                Name = registerModel.Name,
+                Password = registerModel.Password
+            });
+
+            if (loginResult.Successful)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                result.Errors = new[] { loginResult.Error };
+            }
+        }
+
+        Errors = string.Join(", ", result.Errors);
+        ShowErrors = true;
+    }
+
+}

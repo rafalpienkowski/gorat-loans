@@ -1,4 +1,4 @@
-@page "/login"
+@page "/Identity/Account/Login"
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 
@@ -14,7 +14,7 @@
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">Please enter your details</h5>
-        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        <EditForm Model="loginModel" OnValidSubmit="Handle">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -28,6 +28,7 @@
                 <InputText Id="password" type="password" Class="form-control" @bind-Value="loginModel.Password" />
                 <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
+            <p/>
             <button type="submit" class="btn btn-primary">Submit</button>
         </EditForm>
     </div>
@@ -39,7 +40,7 @@
     private bool ShowErrors;
     private string Error = "";
 
-    private async Task HandleLogin()
+    private async Task Handle()
     {
         ShowErrors = false;
 

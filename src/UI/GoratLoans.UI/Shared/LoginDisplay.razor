@@ -1,12 +1,16 @@
 <AuthorizeView>
     <Authorized>
         Hello, @context.User.Identity?.Name!
-        <form method="post" action="logout">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
-        </form>
+        <NavLink class="nav-link" href="/Identity/Account/Logout" Match="NavLinkMatch.All">
+            <span class="oi oi-account-logout"></span> Log out
+        </NavLink>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="login">Log in</a>
+        <NavLink class="nav-link" href="/Identity/Account/Register" Match="NavLinkMatch.All">
+            <span class="oi oi-briefcase"></span> Register
+        </NavLink>
+        <NavLink class="nav-link" href="/Identity/Account/Login" Match="NavLinkMatch.All">
+            <span class="oi oi-account-login"></span> Login
+        </NavLink>
     </NotAuthorized>
 </AuthorizeView>
